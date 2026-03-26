@@ -23,7 +23,7 @@ def analysis_part1():
     # Use utils.plot_images() to display them side-by-side.
     idx_3 = np.where(y_train == -1.0)[0][0]
     idx_8 = np.where(y_train == 1.0)[0][0]
-    utils.plot_images([X_train[idx_3], X_train[idx_8]])
+    utils.plot_images(X_train[idx_3], "3", X_train[idx_8], "8")
     
     # Q2: Print the shapes of the training and testing sets.
     # TODO: Print the shape of X_train, y_train, X_test, and y_test.
@@ -95,6 +95,14 @@ def analysis_part3():
     # TODO: Train a Perceptron for 50 epochs on the blob training data.
     # TODO: Compute and print the final training and testing accuracies.
     # TODO: Use utils.plot_decision_boundary to visualize the model on the blob data.
+    clf_blob = perceptron.Perceptron(num_epochs=50)
+    clf_blob.train(X_train_blob, y_train_blob)
+
+    train_acc = utils.compute_accuracy(y_train_blob, clf_blob.predict(X_train_blob))
+    test_acc = utils.compute_accuracy(y_test_blob, clf_blob.predict(X_test_blob))
+    print(f"Blob -- Train Accuracy: {train_acc:.4f}, Test: Accuracy: {test_acc:.4f}")
+
+    utils.plot_decision_boundary(X_train_blob, y_train_blob, clf_blob, title="Perceptron Decision Boundary (Blobs)")
     
     # Q11: Collinear Blobs Problem
     print("\nFetching collinear data...")
@@ -103,6 +111,13 @@ def analysis_part3():
     # TODO: Train a Perceptron for 100 epochs on the collinear data.
     # TODO: Print the final training accuracy.
     # TODO: Use utils.plot_decision_boundary to visualize the model on the collinear data.
+    clf_coll = perceptron.Perceptron(num_epochs=100)
+    clf_coll.train(X_coll, y_coll)
+
+    train_acc_coll = utils.compute_accuracy(y_coll, clf_coll.predict(X_coll))
+    print(f"Collinear -- Train Accuracy: {train_acc_coll:.4f}")
+
+    utils.plot_decision_boundary(X_coll, y_coll, clf_coll, title="Perceptron Decision Boundary (Collinear Blobs)")
 
 def analysis_part4():
     print("\n--- Analysis Part 4 (Decision Trees) ---")
@@ -126,7 +141,7 @@ def analysis_part4():
 
 if __name__ == "__main__":
     # You can comment/uncomment these out to run specific parts
-    analysis_part1()
+    # analysis_part1()
     # analysis_part2()
-    # analysis_part3()
+    analysis_part3()
     # analysis_part4()

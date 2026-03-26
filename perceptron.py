@@ -16,10 +16,20 @@ class Perceptron:
               w = w + y * x
               b = b + y
         """
-        pass
+        self.w = np.zeros(X.shape[1])
+        self.b = 0
+
+        for _ in range(self.num_epochs):
+            for x_i, y_i in zip(X, y):
+                y_pred = np.sign(np.dot(self.w, x_i) + self.b)
+
+                if y_pred != y_i:
+                    self.w = self.w + y_i * x_i
+                    self.b = self.b + y_i
 
     def predict(self, X):
         """
         TODO: Compute w*x + b. Return +1 or -1.
         """
-        return np.zeros(X.shape[0])
+        scores = X @ self.w + self.b
+        return np.sign(scores)
