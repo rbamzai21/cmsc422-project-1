@@ -63,11 +63,39 @@ def analysis_part2():
     # Get its 5 nearest neighbors from the training set.
     # Plot using utils.plot_image_and_neighbors.
     
+    model = knn.KNN(k=5)
+    model.train(X_train_c, y_train_c)
+    test_preds = model.predict(X_test_c)
+
+    correct_indices = np.where(test_preds == y_test_c)[0]
+    correct_idx = correct_indices[0]
+    neighbor_indices = model.get_k_neighbors_indices(X_test_c[correct_idx])
+    neighbor_imgs = X_train_c[neighbor_indices]
+    true_label = "frog" if y_test_c[correct_idx] == 1.0 else "airplane"
+    utils.plot_image_and_neighbors(
+        X_test_c[correct_idx],
+        neighbor_imgs,
+        title=f"Q5: Correct Prediction — True Label: {true_label}"
+    )
+
     # Q6: Visualizing Neighbors for a Mistake
     # TODO: Find a test example where the prediction is WRONG.
     # Get its 5 nearest neighbors from the training set.
     # Plot using utils.plot_image_and_neighbors.
     
+    wrong_indices = np.where(test_preds != y_test_c)[0]
+    wrong_idx = wrong_indices[0]
+    neighbor_indices_wrong = model.get_k_neighbors_indices(X_test_c[wrong_idx])
+    neighbor_imgs_wrong = X_train_c[neighbor_indices_wrong]
+    true_label_wrong = "frog" if y_test_c[wrong_idx] == 1.0 else "airplane"
+    pred_label_wrong = "frog" if test_preds[wrong_idx] == 1.0 else "airplane"
+    utils.plot_image_and_neighbors(
+        X_test_c[wrong_idx],
+        neighbor_imgs_wrong,
+        title=f"Q6: Wrong Prediction — True: {true_label_wrong}, Predicted: {pred_label_wrong}"
+    )
+ 
+
     # Q7: Hyperparameters, Overfitting, and Underfitting
     k_vals = [3, 5, 7, 9, 11, 13]
     train_accs = ...
@@ -75,6 +103,15 @@ def analysis_part2():
     # TODO: Loop over k, train the model, get Train Acc and Test Acc.
     # Plot Train and Test accuracies vs. k.
     # Hint: plotting code below
+     
+    for k in k_vals:
+        print(f"  Training KNN with k={k}...")
+        m = knn.KNN(k=k)
+        m.train(X_train_c, y_train_c)
+        train_accs.append(utils.compute_accuracy(y_train_c, m.predict(X_train_c)))
+        test_accs.append(utils.compute_accuracy(y_test_c, m.predict(X_test_c)))
+        print(f"    k={k}  train={train_accs[-1]:.4f}  test={test_accs[-1]:.4f}")
+
     plt.figure(figsize=(8, 5))
     plt.plot(k_vals, train_accs, marker='o', label='Train Accuracy')
     plt.plot(k_vals, test_accs, marker='s', label='Test Accuracy')
@@ -132,12 +169,68 @@ def analysis_part4():
     # Q13: Evaluate performance with depths 1, 3, and 5 on SentimentData
     # TODO: Train DT with max_depth 1, 3, and 5 on sentiment_X/y. Evaluate and print accuracy.
     
+    print("\nDecision Tree Depths from Sentiment Data:")
+    for depth in [1, 3, 5]:
+        model = dt.DT({"max_depth": depth})
+        model.train(sentiment_X, sentiment_y)
+        train_acc = utils.compute_accuracy(sentiment_y, model.predict(sentiment_X))
+        test_acc  = utils.compute_accuracy(sentiment_yte, model.predict(sentiment_Xte))
+        print(f"  max_depth={depth}: Training accuracy {train_acc:.4f}, test accuracy {test_acc:.4f}")
+ 
+
     # Q14: Learning Curves (Dataset Size)
     # TODO: Generate learning curves by changing the dataset size (e.g., using SentimentData).
     # Hint: use plotting code from above, you may also make it a function and call it from `utils`
     
+    print("\nLearning Curves - Data Size ...")
+    N_total = sentiment_X.shape[0]
+    sizes = [1, 5, 10, 20, 50, 100, 200, 500, N_total]
+    lc_train_accs = []
+    lc_test_accs  = []
+ 
+    for n in sizes:
+        X_sub = sentiment_X[:n]
+        y_sub = sentiment_y[:n]
+        model = dt.DT({"max_depth": 5})
+        model.train(X_sub, y_sub)
+        lc_train_accs.append(utils.compute_accuracy(y_sub, model.predict(X_sub)))
+        lc_test_accs.append( utils.compute_accuracy(sentiment_yte, model.predict(sentiment_Xte)))
+ 
+    plt.figure(figsize=(8, 5))
+    plt.plot(sizes, lc_train_accs, marker='o', label='Train Accuracy')
+    plt.plot(sizes, lc_test_accs,  marker='s', label='Test Accuracy')
+    plt.xscale('log')
+    plt.xlabel('Training Set Size (log scale)')
+    plt.ylabel('Accuracy')
+    plt.title('Learning Curves — Decision Tree (max_depth=5) on SentimentData')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
     # Q15: Hyperparameter Curves (Max Depth)
     # TODO: Generate hyperparameter curves by varying the max_depth hyperparameter on SentimentData.
+
+    print("\nHyperparameter curves - Max Depth...")
+    depths = [1, 3, 5, 7, 11, 15, 20, 30]
+    hp_train_accs = []
+    hp_test_accs  = []
+ 
+    for depth in depths:
+        model = dt.DT({"max_depth": depth})
+        model.train(sentiment_X, sentiment_y)
+        hp_train_accs.append(utils.compute_accuracy(sentiment_y,   model.predict(sentiment_X)))
+        hp_test_accs.append( utils.compute_accuracy(sentiment_yte, model.predict(sentiment_Xte)))
+        print(f"  max_depth={depth}: train={hp_train_accs[-1]:.4f}  test={hp_test_accs[-1]:.4f}")
+ 
+    plt.figure(figsize=(8, 5))
+    plt.plot(depths, hp_train_accs, marker='o', label='Train Accuracy')
+    plt.plot(depths, hp_test_accs,  marker='s', label='Test Accuracy')
+    plt.xlabel('Max Depth')
+    plt.ylabel('Accuracy')
+    plt.title('Hyperparameter Curves — Decision Tree depth on SentimentData')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 if __name__ == "__main__":
     # You can comment/uncomment these out to run specific parts
